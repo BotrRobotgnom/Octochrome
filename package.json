@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
-  "homepage": "https://BotrRobotgnom.github.io/Octochrome",
+  "homepage": "https://botrrobotgnom.github.io/Octochrome",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
