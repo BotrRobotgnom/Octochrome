@@ -101,25 +101,27 @@ export default function App() {
           </div>
 
           {/* LEGEND */}
-          <p>
-            In 547, in Ravenna, the Basilica of San Vitale was consecrated — a structure whose form defied conventional order. Its heart, an octagon, seemed neither of earth nor heaven, standing between the two realms.
-          </p>
-          <br />
-          <p>
-            At that time, the number seven symbolized completeness, the wholeness of the world. But the eighth day is not a continuation — it is a new beginning. Something beyond linear time, something angular, returning to itself.
-          </p>
-          <br />
-          <p>
-            Our calendar is born from this idea. It does not measure time linearly; it perceives it as angular, a rhythm of facets, where every step leads back and forward at once.
-          </p>
-          <br />
-          <p>
-            A day here is more than a day — it is part of an octagonal cadence, where repetitions occur, and endings become beginnings. Each facet opens a new perspective: observe how time dances along its edges, as ancient architects intended, capturing the eternal angular cycle in stone.
-          </p>
-          <br />
-          <p>
-            From today to tomorrow, from one cycle to another, your journey in <strong>OctaChron</strong> is a passage through space and time, where everything repeats, yet never remains the same.
-          </p>
+          <div className="backdrop-blur-xl bg-white/10 rounded-3xl p-6">
+            <p>
+              In 547, in Ravenna, the Basilica of San Vitale was consecrated — a structure whose form defied conventional order. Its heart, an octagon, seemed neither of earth nor heaven, standing between the two realms.
+            </p>
+            <br />
+            <p>
+              At that time, the number seven symbolized completeness, the wholeness of the world. But the eighth day is not a continuation — it is a new beginning. Something beyond linear time, something angular, returning to itself.
+            </p>
+            <br />
+            <p>
+              Our calendar is born from this idea. It does not measure time linearly; it perceives it as angular, a rhythm of facets, where every step leads back and forward at once.
+            </p>
+            <br />
+            <p>
+              A day here is more than a day — it is part of an octagonal cadence, where repetitions occur, and endings become beginnings. Each facet opens a new perspective: observe how time dances along its edges, as ancient architects intended, capturing the eternal angular cycle in stone.
+            </p>
+            <br />
+            <p>
+              From today to tomorrow, from one cycle to another, your journey in <strong>OctaChron</strong> is a passage through space and time, where everything repeats, yet never remains the same.
+            </p>
+          </div>
 
         </div>
 
