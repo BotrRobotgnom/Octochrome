@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 
 type CustomDate = {
   year: number;
@@ -7,14 +7,11 @@ type CustomDate = {
   weekDay: number;
 };
 
-const START_DATE = new Date(547, 0, 1);
+const START_DATE = new Date(547, 0, 1); // початок відліку - 1 січня 547 року (рік освячення Сан Вітале)
 
-function getDaysDiff(date: Date): number {
-  return Math.floor((date.getTime() - START_DATE.getTime()) / (1000 * 60 * 60 * 24));
-}
-
-function convert(date: Date): CustomDate {
-  const days = getDaysDiff(date);
+// Функція для обчислення CustomDate з Date
+function calculateCustomDate(date: Date): CustomDate {
+  const days = Math.floor((date.getTime() - START_DATE.getTime()) / (1000 * 60 * 60 * 24));
 
   const year = Math.floor(days / 360) + 1;
   const dayOfYear = ((days % 360) + 360) % 360;
@@ -27,39 +24,15 @@ function convert(date: Date): CustomDate {
 }
 
 function CalendarGrid({ currentDay }: { currentDay: number }) {
-  const containerRef = useRef<HTMLDivElement | null>(null);
-  const [columns, setColumns] = useState(8); // default для десктопа
-  const cellSize = 40; // px, ширина одного квадратика
-
-  useEffect(() => {
-    if (!containerRef.current) return;
-
-    const observer = new ResizeObserver((entries) => {
-      for (let entry of entries) {
-        const width = entry.contentRect.width;
-        const newColumns = Math.max(1, Math.floor(width / cellSize));
-        setColumns(newColumns);
-      }
-    });
-
-    observer.observe(containerRef.current);
-
-    return () => observer.disconnect();
-  }, []);
-
   return (
-    <div
-      ref={containerRef}
-      className="grid gap-2"
-      style={{ gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))` }}
-    >
+    <div className="grid gap-2 grid-cols-[repeat(auto-fit,minmax(2rem,1fr))]">
       {Array.from({ length: 72 }, (_, i) => {
         const d = i + 1;
         const active = d === currentDay;
         return (
           <div
             key={d}
-            className={`h-8 flex items-center justify-center rounded-full text-sm transition
+            className={`w-8 h-8 flex items-center justify-center rounded-full text-sm transition
               ${active
                 ? "bg-indigo-400 text-black font-bold scale-110"
                 : "bg-white/10 hover:bg-white/20"}`}
@@ -73,48 +46,79 @@ function CalendarGrid({ currentDay }: { currentDay: number }) {
 }
 
 export default function App() {
-  const [today, setToday] = useState<CustomDate>(convert(new Date()));
   const [input, setInput] = useState<string>("");
-  const [result, setResult] = useState<CustomDate | null>(null);
+
+  // Джерело правди для сьогоднішнього часу
+  //const [currentDate, setCurrentDate] = useState<Date>(new Date());
+  const [today, setToday] = useState<CustomDate>(calculateCustomDate(new Date()));
+
+  // Для конвертера, оновлюється тільки при Convert
+  const [converted, setConverted] = useState<CustomDate | null>(null);
+
   const [time, setTime] = useState<string>("");
 
-  useEffect(() => {
-    const update = () => {
-      const now = new Date();
-      setToday(convert(now));
+  const containerRef = useRef<HTMLDivElement>(null);
+  const resultRef = useRef<HTMLDivElement>(null);
+  const [forceBelow, setForceBelow] = useState(false);
 
-      setTime(
-        now.toLocaleTimeString("en-GB", {
-          hour: "2-digit",
-          minute: "2-digit",
-          second: "2-digit",
-        })
-      );
+  // Таймер для сьогоднішнього часу (календар + час)
+  useEffect(() => {
+    const updateTime = () => {
+      const now = new Date();
+      //setCurrentDate(now);
+      setToday(calculateCustomDate(now));
+
+      const t = now.toLocaleTimeString("en-GB", {
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+      });
+      setTime(t);
     };
 
-    update(); // перший виклик
-    const i = setInterval(update, 1000);
-    return () => clearInterval(i);
+    updateTime();
+    const interval = setInterval(updateTime, 1000);
+    return () => clearInterval(interval);
   }, []);
 
+  // Обчислення, чи переносити результат вниз
+  const updateLayout = () => {
+    if (containerRef.current && resultRef.current) {
+      const containerWidth = containerRef.current.offsetWidth;
+      const inputWidth = containerRef.current.querySelector("input")?.clientWidth || 0;
+      const gap = 16;
+      const resultWidth = resultRef.current.offsetWidth;
+      setForceBelow(resultWidth + gap > containerWidth - inputWidth);
+    }
+  };
+
+  useEffect(() => {
+    window.addEventListener("resize", updateLayout);
+    updateLayout();
+    return () => window.removeEventListener("resize", updateLayout);
+  }, [converted]);
+
+  // Конвертер
   const handleConvert = () => {
     if (!input) return;
-    setResult(convert(new Date(input)));
+    const d = new Date(input); // локальний час користувача
+    const conv = calculateCustomDate(d);
+    setConverted(conv);
+    setTimeout(updateLayout, 10);
   };
 
   return (
     <div className="min-h-screen text-white relative overflow-hidden">
-
-      {/* 🌌 BACKGROUND */}
+      {/* BACKGROUND */}
       <div className="fixed inset-0 -z-10">
         <div className="absolute inset-0 bg-gradient-to-br from-black via-indigo-900 to-black" />
         <div className="absolute inset-0 opacity-30 bg-[radial-gradient(circle_at_20%_20%,white,transparent)]" />
       </div>
 
-      <div className="p-6 sm:p-10 grid gap-10 grid-cols-1 md:grid-cols-3">
+      <div className="p-10 grid gap-10 md:grid-cols-3">
 
         {/* LEFT SIDE */}
-        <div className="col-span-1 md:col-span-2 space-y-6 md:space-y-8">
+        <div className="md:col-span-2 space-y-8">
 
           {/* TITLE */}
           <div className="backdrop-blur-xl bg-white/10 rounded-3xl p-6">
@@ -146,7 +150,7 @@ export default function App() {
         </div>
 
         {/* RIGHT SIDE */}
-        <div className="col-span-1 space-y-6">
+        <div className="space-y-6">
 
           {/* CALENDAR */}
           <div className="backdrop-blur-xl bg-white/10 rounded-3xl p-6">
@@ -157,18 +161,23 @@ export default function App() {
                   Year {today.year} • Month {today.month}
                 </p>
               </div>
-              <div className="text-right font-mono text-lg">{time}</div>
+
+              <div className="text-right font-mono text-lg">
+                {time}
+              </div>
             </div>
 
             <CalendarGrid currentDay={today.day} />
           </div>
 
           {/* CONVERTER */}
-          <div className="backdrop-blur-xl bg-white/10 rounded-3xl p-6">
+          <div className="backdrop-blur-xl bg-white/10 rounded-3xl p-6 flex flex-col" ref={containerRef}>
             <h2 className="text-xl mb-4">Convert date</h2>
-            <div className="flex flex-col sm:flex-row gap-4">
-              {/* INPUT */}
-              <div className="flex flex-col gap-2">
+            <div
+              className={`flex gap-4 flex-wrap`}
+              style={{ flexDirection: forceBelow ? "column" : "row" }}
+            >
+              <div className="flex flex-col gap-2 flex-1">
                 <input
                   type="date"
                   className="bg-white/10 text-white p-2 rounded border border-white/20"
@@ -182,14 +191,20 @@ export default function App() {
                 </button>
               </div>
 
-              {/* RESULT */}
-              {result && (
-                <div className="bg-white/10 p-4 rounded-xl border border-white/20 min-w-[160px]">
+              {converted && (
+                <div
+                  ref={resultRef}
+                  className={`bg-white/10 p-4 rounded-xl border border-white/20 flex-shrink-0`}
+                  style={{
+                    width: forceBelow ? "100%" : "auto",
+                    marginTop: forceBelow ? "0.5rem" : "0",
+                  }}
+                >
                   <p className="opacity-80 mb-2">
-                    Year {result.year} • Month {result.month}
+                    Year {converted.year} • Month {converted.month}
                   </p>
                   <p className="text-sm opacity-70">
-                    Day {result.day} • Weekday {result.weekDay}
+                    Day {converted.day} • Weekday {converted.weekDay}
                   </p>
                 </div>
               )}
